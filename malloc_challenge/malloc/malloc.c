@@ -30,9 +30,10 @@ typedef struct my_metadata_t {
   struct my_metadata_t *next;
 } my_metadata_t;
 
+// リストの頭を4つ持つ
 typedef struct my_heap_t {
-  my_metadata_t *free_head;
-  my_metadata_t dummy;
+  my_metadata_t *free_head[4];
+  my_metadata_t dummy[4];
 } my_heap_t;
 
 //
@@ -44,19 +45,66 @@ my_heap_t my_heap;
 // Helper functions (feel free to add/remove/edit!)
 //
 
+// free_listをそれぞれのサイズごとに配列に追加する
 void my_add_to_free_list(my_metadata_t *metadata) {
   assert(!metadata->next);
-  metadata->next = my_heap.free_head;
-  my_heap.free_head = metadata;
+  if (metadata->size <= 1024){
+    metadata->next = my_heap.free_head[0];
+    my_heap.free_head[0] = metadata;
+  } 
+
+  else if (metadata->size > 1024 && metadata->size <= 2048){
+    metadata->next = my_heap.free_head[1];
+    my_heap.free_head[1] = metadata;
+  } 
+
+  else if (metadata->size > 2048 && metadata->size <= 3072){
+    metadata->next = my_heap.free_head[2];
+    my_heap.free_head[2] = metadata;
+  } 
+
+  else if (metadata->size > 3072 && metadata->size <= 4096){
+    metadata->next = my_heap.free_head[3];
+    my_heap.free_head[3] = metadata;
+  } 
 }
 
+// 割り当てたfree_listを削除
+// metadataのサイズをかくにんして、どこを消すか判断
 void my_remove_from_free_list(my_metadata_t *metadata, my_metadata_t *prev) {
-  if (prev) {
-    prev->next = metadata->next;
-  } else {
-    my_heap.free_head = metadata->next;
+  if (metadata->size <= 1024){
+    if (prev) {
+      prev->next = metadata->next;
+    } else {
+      my_heap.free_head[0] = metadata->next;
+    }
+    metadata->next = NULL;
   }
-  metadata->next = NULL;
+  else if (metadata->size > 1024 && metadata->size <= 2048){
+    if (prev) {
+      prev->next = metadata->next;
+    } else {
+      my_heap.free_head[1] = metadata->next;
+    }
+    metadata->next = NULL;
+  }
+  else if (metadata->size > 2048 && metadata->size <= 3072){
+    if (prev) {
+      prev->next = metadata->next;
+    } else {
+      my_heap.free_head[2] = metadata->next;
+    }
+    metadata->next = NULL;
+  }
+  else if (metadata->size > 3072 && metadata->size <= 4096){
+    if (prev) {
+      prev->next = metadata->next;
+    } else {
+      my_heap.free_head[3] = metadata->next;
+    }
+    metadata->next = NULL;
+  }
+
 }
 
 //
@@ -65,9 +113,22 @@ void my_remove_from_free_list(my_metadata_t *metadata, my_metadata_t *prev) {
 
 // This is called at the beginning of each challenge.
 void my_initialize() {
-  my_heap.free_head = &my_heap.dummy;
-  my_heap.dummy.size = 0;
-  my_heap.dummy.next = NULL;
+  my_heap.free_head[0] = &my_heap.dummy[0];
+  my_heap.dummy[0].size = 0;
+  my_heap.dummy[0].next = NULL;
+
+  my_heap.free_head[1] = &my_heap.dummy[1];
+  my_heap.dummy[1].size = 0;
+  my_heap.dummy[1].next = NULL;
+  
+  my_heap.free_head[2] = &my_heap.dummy[2];
+  my_heap.dummy[2].size = 0;
+  my_heap.dummy[2].next = NULL;
+  
+  my_heap.free_head[3] = &my_heap.dummy[3];
+  my_heap.dummy[3].size = 0;
+  my_heap.dummy[3].next = NULL;
+  
 }
 
 // my_malloc() is called every time an object is allocated.
@@ -75,20 +136,46 @@ void my_initialize() {
 // 4000. You are not allowed to use any library functions other than
 // mmap_from_system() / munmap_to_system().
 void *my_malloc(size_t size) {
-  my_metadata_t *metadata = my_heap.free_head;
+  my_metadata_t *metadata = NULL;
   my_metadata_t *prev = NULL;
+  my_metadata_t *best = NULL;
+  my_metadata_t *best_prev = NULL;
 
+  if (size <= 1024) {
+    metadata = my_heap.free_head[0];
+  } else if (size > 1024 && size <= 2048) {
+    metadata = my_heap.free_head[1];
+  } else if (size > 2048 && size <= 3072) {
+    metadata = my_heap.free_head[2];
+  } else if (size > 3072 && size <= 4096) {
+    metadata = my_heap.free_head[3];
+  }
 
   // First-fit: Find the first free slot the object fits.
   // TODO: Update this logic to Best-fit!
-  while (metadata && metadata->size < size) {
+
+  while (metadata) {
+    // 探しているmetadataのサイズが十分大きい場合
+    // その中で一番小さいmetadataを保存
+    if (metadata->size >= size){
+      if (!best || metadata->size < best->size){
+        best = metadata;
+        best_prev = prev;
+      }
+    }
+    // metadataを最後までみて、一番最適なdataを見つける
     prev = metadata;
     metadata = metadata->next;
   }
+
+  // 最適な値を返す
+  metadata = best; 
+  prev = best_prev;
+
   // now, metadata points to the first free slot
   // and prev is the previous entry.
 
-  
+
 
   if (!metadata) {
     // There was no free slot available. We need to request a new memory region
