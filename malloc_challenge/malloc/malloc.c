@@ -107,6 +107,19 @@ void my_remove_from_free_list(my_metadata_t *metadata, my_metadata_t *prev) {
 
 }
 
+
+// // 右側もfree_listだった場合、結合する
+// void my_merge_right(my_metadata_t *metadata) {
+//   //metadataのポインタの位置からsize分だけ右に移動したポインタが示すところを見たい
+//   if (metadata + metadata->size + 1 == metadata->next){
+//     // free_listがアドレス順じゃないので、これだと右隣を調べられていない
+//     // アドレス的に見た、右隣を指定しないといけない
+//     metadata->size = metadata->size + metadata->next->size;
+//     metadata->next = metadata->next->next;
+//   }
+// }
+
+
 //
 // Interfaces of malloc (DO NOT RENAME FOLLOWING FUNCTIONS!)
 //
