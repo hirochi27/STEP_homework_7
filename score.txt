@@ -51,7 +51,7 @@ Please copy & paste the following data in the score sheet!
 
 
 
-
+#ページ変換の位置変更
 ====================================================
 Challenge #1    |   simple_malloc =>       my_malloc
 --------------- + --------------- => ---------------
@@ -81,3 +81,66 @@ Utilization [%] |              15 =>              15
 Challenge done!
 Please copy & paste the following data in the score sheet!
 27,70,22,39,270,8,62194,15,33577,15,
+
+====================================================
+Challenge #1    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|              24 =>              27
+Utilization [%] |              70 =>              70
+====================================================
+Challenge #2    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|              22 =>              22
+Utilization [%] |              40 =>              39
+====================================================
+Challenge #3    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|             268 =>             291
+Utilization [%] |               8 =>               8
+====================================================
+Challenge #4    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|           56816 =>           51035
+Utilization [%] |              16 =>              15
+====================================================
+Challenge #5    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|           43549 =>           41933
+Utilization [%] |              15 =>              15
+
+Challenge done!
+Please copy & paste the following data in the score sheet!
+27,70,22,39,291,8,51035,15,41933,15,
+
+
+
+Best fit + bin + リストの分割
+====================================================
+Challenge #1    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|              23 =>            3093
+Utilization [%] |              70 =>              65
+====================================================
+Challenge #2    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|              30 =>            1683
+Utilization [%] |              40 =>              31
+====================================================
+Challenge #3    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|             321 =>            2026
+Utilization [%] |               8 =>              44
+====================================================
+Challenge #4    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|           65002 =>           16148
+Utilization [%] |              16 =>              72
+====================================================
+Challenge #5    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|           46362 =>           10136
+Utilization [%] |              15 =>              72
+
+Challenge done!
+Please copy & paste the following data in the score sheet!
+3093,65,1683,31,2026,44,16148,72,10136,72,

@@ -76,8 +76,8 @@ void my_add_to_free_list(my_metadata_t *metadata) {
     metadata->prev = NULL;
     metadata->next = my_heap.free_head[2];
 
-    if (my_heap.free_head[0]){
-    my_heap.free_head[0]->prev = metadata;
+    if (my_heap.free_head[2]){
+    my_heap.free_head[2]->prev = metadata;
     }
 
     my_heap.free_head[2] = metadata;
@@ -87,8 +87,8 @@ void my_add_to_free_list(my_metadata_t *metadata) {
     metadata->prev = NULL;
     metadata->next = my_heap.free_head[3];
 
-    if (my_heap.free_head[0]){
-      my_heap.free_head[0]->prev = metadata;
+    if (my_heap.free_head[3]){
+      my_heap.free_head[3]->prev = metadata;
     }
 
     my_heap.free_head[3] = metadata;
@@ -155,13 +155,6 @@ void my_remove_from_free_list(my_metadata_t *metadata, my_metadata_t *prev) {
 
 }
 
-  // free list + メタデータのサイズが4096だったら、メモリに領域を返す
-if (metadata->size == 4096 - sizeof(my_metadata_t)){
-  // free_listから削除
-  my_remove_from_free_list(metadata, prev);
-  munmap_to_system(metadata, 4096);
-}
-
 
 
 
@@ -179,7 +172,7 @@ void my_initialize() {
   my_heap.free_head[1] = &my_heap.dummy[1];
   my_heap.dummy[1].size = 0;
   my_heap.dummy[1].next = NULL;
-  my_heap.dummy[1].pages = NULL;
+  my_heap.dummy[1].prev = NULL;
   
   my_heap.free_head[2] = &my_heap.dummy[2];
   my_heap.dummy[2].size = 0;
@@ -203,31 +196,33 @@ void *my_malloc(size_t size) {
   my_metadata_t *best = NULL;
   my_metadata_t *best_prev = NULL;
 
+  int start_index = 0;
+
   if (size <= 1024) {
-    metadata = my_heap.free_head[0];
-  } else if (size > 1024 && size <= 2048) {
-    metadata = my_heap.free_head[1];
-  } else if (size > 2048 && size <= 3072) {
-    metadata = my_heap.free_head[2];
-  } else if (size > 3072 && size <= 4096) {
-    metadata = my_heap.free_head[3];
+    start_index = 0;
+  } else if (size <= 2048) {
+    start_index = 1;
+  } else if (size <= 3072) {
+    start_index = 2;
+  } else {
+    start_index = 3;
   }
 
-  // First-fit: Find the first free slot the object fits.
-  // TODO: Update this logic to Best-fit!
+  // Best-fit: リクエストされたsizeのリストから、大きいリストまで順番に探す。
+  for (int i = start_index; i < 4; i++) {
+    metadata = my_heap.free_head[i];
+    prev = NULL;
 
-  while (metadata) {
-    // 探しているmetadataのサイズが十分大きい場合
-    // その中で一番小さいmetadataを保存
-    if (metadata->size >= size){
-      if (!best || metadata->size < best->size){
-        best = metadata;
-        best_prev = prev;
+    while (metadata) {
+      if (metadata->size >= size) {
+        if (!best || metadata->size < best->size) {
+          best = metadata;
+          best_prev = prev;
+        }
       }
+      prev = metadata;
+      metadata = metadata->next;
     }
-    // metadataを最後までみて、一番最適なdataを見つける
-    prev = metadata;
-    metadata = metadata->next;
   }
 
   // 最適な値を返す
@@ -302,6 +297,14 @@ void my_free(void *ptr) {
   my_metadata_t *metadata = (my_metadata_t *)ptr - 1;
   // Add the free slot to the free list.
   my_add_to_free_list(metadata);
+
+    // free list + メタデータのサイズが4096だったら、メモリに領域を返す
+  if (metadata->size == 4096 - sizeof(my_metadata_t)){
+    // free_listから削除
+    my_remove_from_free_list(metadata, NULL);
+    munmap_to_system(metadata, 4096);
+}
+
 }
 
 // This is called at the end of each challenge.
