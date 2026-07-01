@@ -19,6 +19,7 @@
 //
 
 void *mmap_from_system(size_t size);
+// 
 void munmap_to_system(void *ptr, size_t size);
 
 //
@@ -28,6 +29,7 @@ void munmap_to_system(void *ptr, size_t size);
 typedef struct my_metadata_t {
   size_t size;
   struct my_metadata_t *next;
+  struct my_metadata_t *prev;
 } my_metadata_t;
 
 // リストの頭を4つ持つ
@@ -49,25 +51,71 @@ my_heap_t my_heap;
 void my_add_to_free_list(my_metadata_t *metadata) {
   assert(!metadata->next);
   if (metadata->size <= 1024){
+    metadata->prev = NULL;
     metadata->next = my_heap.free_head[0];
+
+    if (my_heap.free_head[0]){
+      my_heap.free_head[0]->prev = metadata;
+    }
+
     my_heap.free_head[0] = metadata;
   } 
 
   else if (metadata->size > 1024 && metadata->size <= 2048){
+    metadata->prev = NULL;
     metadata->next = my_heap.free_head[1];
+
+    if (my_heap.free_head[1]){
+      my_heap.free_head[1]->prev = metadata;
+    }
+
     my_heap.free_head[1] = metadata;
   } 
 
   else if (metadata->size > 2048 && metadata->size <= 3072){
+    metadata->prev = NULL;
     metadata->next = my_heap.free_head[2];
+
+    if (my_heap.free_head[0]){
+    my_heap.free_head[0]->prev = metadata;
+    }
+
     my_heap.free_head[2] = metadata;
   } 
 
   else if (metadata->size > 3072 && metadata->size <= 4096){
+    metadata->prev = NULL;
     metadata->next = my_heap.free_head[3];
+
+    if (my_heap.free_head[0]){
+      my_heap.free_head[0]->prev = metadata;
+    }
+
     my_heap.free_head[3] = metadata;
   } 
 }
+
+//metadataにprevも持たせる
+//metadata + siseof(my_metadata_t) + metadata->size = in my_heap
+//  right = metadata + siseof(my_metadata_t) + metadata -> size
+//  right->prev->next = right->next
+//  right->next->prev = right->prev
+//  metadata->size = sizeof(right) + right->size
+
+
+// // 右側もfree_listだった場合、結合する
+// void my_merge_right(my_metadata_t *metadata) {
+//   //metadataのポインタの位置からsize分だけ右に移動したポインタが示すところを見たい
+//   if (metadata + metadata->size + 1 == metadata->next){
+//     // free_listがアドレス順じゃないので、これだと右隣を調べられていない
+//     // アドレス的に見た、右隣を指定しないといけない
+//     metadata->size = metadata->size + metadata->next->size;
+//     metadata->next = metadata->next->next;
+//   }
+// }
+
+
+
 
 // 割り当てたfree_listを削除
 // metadataのサイズをかくにんして、どこを消すか判断
@@ -107,17 +155,14 @@ void my_remove_from_free_list(my_metadata_t *metadata, my_metadata_t *prev) {
 
 }
 
+  // free list + メタデータのサイズが4096だったら、メモリに領域を返す
+if (metadata->size == 4096 - sizeof(my_metadata_t)){
+  // free_listから削除
+  my_remove_from_free_list(metadata, prev);
+  munmap_to_system(metadata, 4096);
+}
 
-// // 右側もfree_listだった場合、結合する
-// void my_merge_right(my_metadata_t *metadata) {
-//   //metadataのポインタの位置からsize分だけ右に移動したポインタが示すところを見たい
-//   if (metadata + metadata->size + 1 == metadata->next){
-//     // free_listがアドレス順じゃないので、これだと右隣を調べられていない
-//     // アドレス的に見た、右隣を指定しないといけない
-//     metadata->size = metadata->size + metadata->next->size;
-//     metadata->next = metadata->next->next;
-//   }
-// }
+
 
 
 //
@@ -129,18 +174,22 @@ void my_initialize() {
   my_heap.free_head[0] = &my_heap.dummy[0];
   my_heap.dummy[0].size = 0;
   my_heap.dummy[0].next = NULL;
+  my_heap.dummy[0].prev = NULL;
 
   my_heap.free_head[1] = &my_heap.dummy[1];
   my_heap.dummy[1].size = 0;
   my_heap.dummy[1].next = NULL;
+  my_heap.dummy[1].pages = NULL;
   
   my_heap.free_head[2] = &my_heap.dummy[2];
   my_heap.dummy[2].size = 0;
   my_heap.dummy[2].next = NULL;
+  my_heap.dummy[2].prev = NULL;
   
   my_heap.free_head[3] = &my_heap.dummy[3];
   my_heap.dummy[3].size = 0;
   my_heap.dummy[3].next = NULL;
+  my_heap.dummy[3].prev = NULL;
   
 }
 

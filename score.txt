@@ -48,3 +48,36 @@ Utilization [%] |              15 =>              15
 Challenge done!
 Please copy & paste the following data in the score sheet!
 23,70,22,39,296,8,60925,15,46696,15,
+
+
+
+
+====================================================
+Challenge #1    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|              22 =>              27
+Utilization [%] |              70 =>              70
+====================================================
+Challenge #2    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|              22 =>              22
+Utilization [%] |              40 =>              39
+====================================================
+Challenge #3    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|             259 =>             270
+Utilization [%] |               8 =>               8
+====================================================
+Challenge #4    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|           55939 =>           62194
+Utilization [%] |              16 =>              15
+====================================================
+Challenge #5    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|           39273 =>           33577
+Utilization [%] |              15 =>              15
+
+Challenge done!
+Please copy & paste the following data in the score sheet!
+27,70,22,39,270,8,62194,15,33577,15,
