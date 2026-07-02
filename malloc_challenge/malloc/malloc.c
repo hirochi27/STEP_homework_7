@@ -29,7 +29,6 @@ void munmap_to_system(void *ptr, size_t size);
 typedef struct my_metadata_t {
   size_t size;
   struct my_metadata_t *next;
-  struct my_metadata_t *prev;
 } my_metadata_t;
 
 // リストの頭を4つ持つ
@@ -51,45 +50,25 @@ my_heap_t my_heap;
 void my_add_to_free_list(my_metadata_t *metadata) {
   assert(!metadata->next);
   if (metadata->size <= 1024){
-    metadata->prev = NULL;
     metadata->next = my_heap.free_head[0];
-
-    if (my_heap.free_head[0]){
-      my_heap.free_head[0]->prev = metadata;
-    }
 
     my_heap.free_head[0] = metadata;
   } 
 
   else if (metadata->size > 1024 && metadata->size <= 2048){
-    metadata->prev = NULL;
     metadata->next = my_heap.free_head[1];
-
-    if (my_heap.free_head[1]){
-      my_heap.free_head[1]->prev = metadata;
-    }
 
     my_heap.free_head[1] = metadata;
   } 
 
   else if (metadata->size > 2048 && metadata->size <= 3072){
-    metadata->prev = NULL;
     metadata->next = my_heap.free_head[2];
-
-    if (my_heap.free_head[2]){
-    my_heap.free_head[2]->prev = metadata;
-    }
 
     my_heap.free_head[2] = metadata;
   } 
 
   else if (metadata->size > 3072 && metadata->size <= 4096){
-    metadata->prev = NULL;
     metadata->next = my_heap.free_head[3];
-
-    if (my_heap.free_head[3]){
-      my_heap.free_head[3]->prev = metadata;
-    }
 
     my_heap.free_head[3] = metadata;
   } 
@@ -113,6 +92,7 @@ void my_add_to_free_list(my_metadata_t *metadata) {
 //     metadata->next = metadata->next->next;
 //   }
 // }
+
 
 
 
@@ -156,6 +136,29 @@ void my_remove_from_free_list(my_metadata_t *metadata, my_metadata_t *prev) {
 }
 
 
+// 右結合
+void my_merge_right(my_metadata_t *metadata){
+  // メモリ上で右側を確認
+  my_metadata_t *right = (my_metadata_t *)((char *)(metadata + 1) + metadata->size);
+
+  for (int i=0; i<4; i++){
+    my_metadata_t *cur = my_heap.free_head[i];
+    my_metadata_t *prev = NULL;
+    // curにリストを頭からいれていって、連続した空空間かどうか確認
+    while (cur){
+      if (cur == right){
+        my_remove_from_free_list(cur, prev);
+        metadata->size += sizeof(my_metadata_t) + cur->size;
+        return;
+      }
+
+      prev = cur;
+      cur = cur->next;
+    }
+  }
+}
+
+
 
 
 //
@@ -167,22 +170,18 @@ void my_initialize() {
   my_heap.free_head[0] = &my_heap.dummy[0];
   my_heap.dummy[0].size = 0;
   my_heap.dummy[0].next = NULL;
-  my_heap.dummy[0].prev = NULL;
 
   my_heap.free_head[1] = &my_heap.dummy[1];
   my_heap.dummy[1].size = 0;
   my_heap.dummy[1].next = NULL;
-  my_heap.dummy[1].prev = NULL;
   
   my_heap.free_head[2] = &my_heap.dummy[2];
   my_heap.dummy[2].size = 0;
   my_heap.dummy[2].next = NULL;
-  my_heap.dummy[2].prev = NULL;
   
   my_heap.free_head[3] = &my_heap.dummy[3];
   my_heap.dummy[3].size = 0;
   my_heap.dummy[3].next = NULL;
-  my_heap.dummy[3].prev = NULL;
   
 }
 
@@ -213,6 +212,7 @@ void *my_malloc(size_t size) {
     metadata = my_heap.free_head[i];
     prev = NULL;
 
+    // 最適な値を見つけたらbestを更新
     while (metadata) {
       if (metadata->size >= size) {
         if (!best || metadata->size < best->size) {
@@ -295,15 +295,20 @@ void my_free(void *ptr) {
   //     ^          ^
   //     metadata   ptr
   my_metadata_t *metadata = (my_metadata_t *)ptr - 1;
+
+  // 右結合
+  my_merge_right(metadata);
+
+  // free list + メタデータのサイズが4096だったら、メモリに領域を返す
+  // if (metadata->size == 4096 - sizeof(my_metadata_t)){
+  // metadataがメモリ（ページ）の先頭、かつ、サイズが4096だった場合、空間をメモリに返す
+  if ((uintptr_t)metadata % 4096 == 0 &&metadata->size == 4096 - sizeof(my_metadata_t)){
+    munmap_to_system(metadata, 4096);
+    return;
+  }
+
   // Add the free slot to the free list.
   my_add_to_free_list(metadata);
-
-    // free list + メタデータのサイズが4096だったら、メモリに領域を返す
-  if (metadata->size == 4096 - sizeof(my_metadata_t)){
-    // free_listから削除
-    my_remove_from_free_list(metadata, NULL);
-    munmap_to_system(metadata, 4096);
-}
 
 }
 

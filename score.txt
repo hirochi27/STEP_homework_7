@@ -114,7 +114,7 @@ Please copy & paste the following data in the score sheet!
 
 
 
-Best fit + bin + リストの分割
+Best fit + bin リストの分割
 ====================================================
 Challenge #1    |   simple_malloc =>       my_malloc
 --------------- + --------------- => ---------------
@@ -144,3 +144,36 @@ Utilization [%] |              15 =>              72
 Challenge done!
 Please copy & paste the following data in the score sheet!
 3093,65,1683,31,2026,44,16148,72,10136,72,
+
+
+
+ページ返還＋右結合も追加
+====================================================
+Challenge #1    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|              38 =>            2978
+Utilization [%] |              70 =>              70
+====================================================
+Challenge #2    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|              31 =>            1964
+Utilization [%] |              40 =>              39
+====================================================
+Challenge #3    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|             421 =>            2120
+Utilization [%] |               8 =>              51
+====================================================
+Challenge #4    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|           74000 =>            7058
+Utilization [%] |              16 =>              51
+====================================================
+Challenge #5    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|           58971 =>            4369
+Utilization [%] |              15 =>              53
+
+Challenge done!
+Please copy & paste the following data in the score sheet!
+2978,70,1964,39,2120,51,7058,51,4369,53,
